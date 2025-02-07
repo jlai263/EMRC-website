@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { motion, useScroll, useMotionValueEvent } from 'framer-motion'
+import { usePathname } from 'next/navigation'
+import { motion, useScroll, useMotionValueEvent, AnimatePresence } from 'framer-motion'
 
 const navItems = [
   { name: 'Home', href: '/' },
@@ -13,12 +14,15 @@ const navItems = [
 
 export function Navbar() {
   const [hidden, setHidden] = useState(false)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const { scrollY } = useScroll()
+  const pathname = usePathname()
   
   useMotionValueEvent(scrollY, "change", (latest) => {
     const previous = scrollY.getPrevious()
-    if (latest > previous && latest > 150) {
+    if (previous !== undefined && latest > previous && latest > 150) {
       setHidden(true)
+      setMobileMenuOpen(false)
     } else {
       setHidden(false)
     }
@@ -34,50 +38,93 @@ export function Navbar() {
       animate={hidden ? "hidden" : "visible"}
       transition={{ duration: 0.35, ease: "easeInOut" }}
     >
-      <nav className="glass mx-4 my-2 rounded-full px-4 py-2 md:mx-8 md:px-6">
-        <div className="flex items-center justify-between">
-          <Link href="/" className="text-xl font-bold">
-            EMRC
-          </Link>
-          
-          <ul className="hidden space-x-8 md:flex">
-            {navItems.map((item) => (
-              <li key={item.name}>
-                <Link
-                  href={item.href}
-                  className="relative text-sm font-medium text-white/90 transition-colors hover:text-white"
-                >
-                  {item.name}
-                  <motion.span
-                    className="absolute -bottom-1 left-0 h-[1px] w-0 bg-white"
-                    whileHover={{ width: '100%' }}
-                    transition={{ duration: 0.3 }}
-                  />
-                </Link>
-              </li>
-            ))}
-          </ul>
-
-          <button
-            className="block md:hidden"
-            onClick={() => setHidden(false)}
-            aria-label="Toggle menu"
-          >
-            <svg
-              className="h-6 w-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+      <nav className="mx-4 my-4 md:mx-8">
+        <div className="glass border border-white/10 rounded-2xl px-6 py-4 backdrop-blur-md">
+          <div className="flex items-center justify-between">
+            <Link 
+              href="/" 
+              className="relative group flex items-center space-x-2"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 6h16M4 12h16M4 18h16"
-              />
-            </svg>
-          </button>
+              <span className="text-2xl font-bold text-white">
+                EMRC
+              </span>
+            </Link>
+            
+            <ul className="hidden md:flex items-center space-x-1">
+              {navItems.map((item) => (
+                <li key={item.name}>
+                  <Link
+                    href={item.href}
+                    className={`relative px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300
+                      ${pathname === item.href 
+                        ? 'text-white glass-dark' 
+                        : 'text-white/70 hover:text-white hover:bg-white/10'
+                      }`}
+                  >
+                    {item.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+
+            <button
+              className="block md:hidden relative z-50 w-10 h-10 glass-dark rounded-lg border border-white/10"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-label="Toggle menu"
+            >
+              <div className="absolute inset-0 flex items-center justify-center">
+                <motion.div
+                  className="w-5 h-[2px] bg-white absolute"
+                  animate={mobileMenuOpen ? { rotate: 45, y: 0 } : { rotate: 0, y: -4 }}
+                />
+                <motion.div
+                  className="w-5 h-[2px] bg-white absolute"
+                  animate={mobileMenuOpen ? { opacity: 0 } : { opacity: 1 }}
+                />
+                <motion.div
+                  className="w-5 h-[2px] bg-white absolute"
+                  animate={mobileMenuOpen ? { rotate: -45, y: 0 } : { rotate: 0, y: 4 }}
+                />
+              </div>
+            </button>
+          </div>
         </div>
+
+        <AnimatePresence>
+          {mobileMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.2 }}
+              className="absolute top-24 left-0 right-0 mx-4 glass border border-white/10 rounded-2xl p-4 backdrop-blur-md md:hidden"
+            >
+              <ul className="space-y-2">
+                {navItems.map((item) => (
+                  <motion.li
+                    key={item.name}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <Link
+                      href={item.href}
+                      className={`block text-sm font-medium py-3 px-4 rounded-lg transition-all duration-300
+                        ${pathname === item.href 
+                          ? 'glass-dark text-white' 
+                          : 'text-white/70 hover:text-white hover:bg-white/10'
+                        }`}
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      {item.name}
+                    </Link>
+                  </motion.li>
+                ))}
+              </ul>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </nav>
     </motion.header>
   )

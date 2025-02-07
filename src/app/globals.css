@@ -28,10 +28,10 @@
 
 @layer base {
   * {
-    @apply border-border;
+    @apply border-[hsl(var(--border))];
   }
   body {
-    @apply bg-background text-foreground antialiased;
+    @apply bg-background text-[hsl(var(--foreground))] antialiased;
   }
 }
 
@@ -77,4 +77,64 @@
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* Hyperspace effect */
+.hyperspace-stars {
+  position: fixed;
+  width: 2px;
+  height: 2px;
+  background: white;
+  box-shadow: 
+    0 0 2px white,
+    0 0 4px white,
+    0 0 6px white;
+  animation: hyperspace-stars 2s linear infinite;
+}
+
+@keyframes hyperspace-stars {
+  0% {
+    opacity: 0;
+    transform: translateZ(0) scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: translateZ(400px) scale(2);
+  }
+  100% {
+    opacity: 0;
+    transform: translateZ(800px) scale(4);
+  }
+}
+
+.hyperspace-tunnel {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle at center, 
+    transparent 0%,
+    rgba(0, 0, 0, 0.2) 30%,
+    rgba(0, 0, 0, 0.8) 60%,
+    black 100%
+  );
+  transform-style: preserve-3d;
+  perspective: 1000px;
+}
+
+/* Navigation hover states */
+.nav-group-hover\:opacity-100 {
+  opacity: 0;
+}
+
+nav:hover .nav-group-hover\:opacity-100 {
+  opacity: 1;
+}
+
+/* Smooth width transition for nav items */
+.nav-item-transition {
+  transition: width 0.3s ease;
+  width: 3rem;
+}
+
+nav:hover .nav-item-transition {
+  width: 100%;
 } 
