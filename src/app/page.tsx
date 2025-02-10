@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import FullCalendar from '@fullcalendar/react'
+import dayGridPlugin from '@fullcalendar/daygrid'
 
 // Sections content
 type Section = {
@@ -22,6 +24,11 @@ const sections: Record<string, Section> = {
     content: "Join our inclusive running community where we meet every Saturday at 10 AM at John Fraser Secondary School Track, welcoming runners of all levels and paces.",
     icon: "ℹ️"
   },
+  schedule: {
+    title: "Schedule",
+    content: "View our running schedule and upcoming events.",
+    icon: "📅"
+  },
   coaches: {
     title: "Our Run Leaders",
     content: "Meet our dedicated run leaders who help guide and support your running journey.",
@@ -34,11 +41,52 @@ const sections: Record<string, Section> = {
   }
 }
 
+const events = [
+  {
+    title: 'EMRC Club Run (5km)',
+    start: '2025-03-01T10:00:00',
+    end: '2025-03-01T11:00:00',
+    location: 'John Fraser Secondary School Track',
+    description: 'Weekly 5km run - all paces welcome!'
+  },
+  {
+    title: 'EMRC Club Run (5km)',
+    start: '2025-03-08T10:00:00',
+    end: '2025-03-08T11:00:00',
+    location: 'John Fraser Secondary School Track',
+    description: 'Weekly 5km run - all paces welcome!'
+  },
+  {
+    title: 'EMRC Club Run (5km)',
+    start: '2025-03-15T10:00:00',
+    end: '2025-03-15T11:00:00',
+    location: 'John Fraser Secondary School Track',
+    description: 'Weekly 5km run - all paces welcome!'
+  },
+  {
+    title: 'EMRC Club Run (5km)',
+    start: '2025-03-22T10:00:00',
+    end: '2025-03-22T11:00:00',
+    location: 'John Fraser Secondary School Track',
+    description: 'Weekly 5km run - all paces welcome!'
+  },
+  {
+    title: 'EMRC Club Run (5km)',
+    start: '2025-03-29T10:00:00',
+    end: '2025-03-29T11:00:00',
+    location: 'John Fraser Secondary School Track',
+    description: 'Weekly 5km run - all paces welcome!'
+  }
+]
+
 export default function Home() {
   const [currentSection, setCurrentSection] = useState('home')
   const [isTransitioning, setIsTransitioning] = useState(false)
   const [isHovered, setIsHovered] = useState<string | null>(null)
   const [isMobile, setIsMobile] = useState(false)
+
+  // Add mounted state for calendar
+  const [calendarMounted, setCalendarMounted] = useState(false)
 
   useEffect(() => {
     const checkMobile = () => {
@@ -53,6 +101,10 @@ export default function Home() {
     
     // Cleanup
     return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+
+  useEffect(() => {
+    setCalendarMounted(true)
   }, [])
 
   const handleNavigation = async (section: string) => {
@@ -119,7 +171,7 @@ export default function Home() {
                 {/* Active indicator */}
                 {currentSection === key && (
                   <motion.div
-                    className="absolute right-0 top-0 h-full w-1 bg-white rounded-l-full"
+                    className="absolute right-0 top-0 h-full w-1 bg-white rounded-r-full"
                     layoutId="activeIndicator"
                     style={{
                       right: 0
@@ -206,6 +258,63 @@ export default function Home() {
                 >
                   Learn More
                 </button>
+              </motion.div>
+            )}
+
+            {/* Schedule section content */}
+            {currentSection === 'schedule' && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.2 }}
+                className="space-y-8"
+              >
+                <p className="text-center text-white/80 max-w-2xl mx-auto">
+                  Join us every Saturday at 10 AM for our weekly run at John Fraser Secondary School Track.
+                </p>
+
+                <div className="glass p-6 rounded-2xl border border-white/10">
+                  <div style={{ height: '600px' }}>
+                    {calendarMounted && (
+                      <FullCalendar
+                        plugins={[dayGridPlugin]}
+                        initialView="dayGridMonth"
+                        events={events}
+                        initialDate="2025-03-01"
+                        headerToolbar={{
+                          left: 'prev,next today',
+                          center: 'title',
+                          right: ''
+                        }}
+                        height="100%"
+                        showNonCurrentDates={false}
+                        eventContent={(eventInfo) => {
+                          return (
+                            <div className="p-1 cursor-pointer hover:bg-white/20 rounded transition-all duration-200">
+                              <div className="text-sm font-medium">
+                                Club Run
+                              </div>
+                            </div>
+                          )
+                        }}
+                        eventDidMount={(info) => {
+                          // Add hover title with full details
+                          info.el.title = `${info.event.title}\nTime: 10:00 AM - 11:00 AM\nLocation: ${info.event.extendedProps.location}\n${info.event.extendedProps.description}`
+                        }}
+                      />
+                    )}
+                  </div>
+                </div>
+
+                <div className="glass p-6 rounded-2xl text-center border border-white/10">
+                  <h2 className="text-2xl font-semibold text-white mb-4">Regular Schedule</h2>
+                  <div className="space-y-2 text-white/80">
+                    <p>• Every Saturday at 10:00 AM</p>
+                    <p>• 5km group run</p>
+                    <p>• All paces welcome</p>
+                    <p>• Location: John Fraser Secondary School Track</p>
+                  </div>
+                </div>
               </motion.div>
             )}
 
@@ -357,8 +466,8 @@ export default function Home() {
                       <p>• Positive attitude</p>
                       <p>• Friends are welcome!</p>
                     </div>
-                  </div>
-                </motion.div>
+              </div>
+            </motion.div>
 
                 {/* Contact Form */}
                 <motion.form
