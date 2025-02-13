@@ -88,6 +88,16 @@ export default function Home() {
   // Add mounted state for calendar
   const [calendarMounted, setCalendarMounted] = useState(false)
 
+  const [selectedEventId, setSelectedEventId] = useState<string | null>(null)
+
+  // Add modal state
+  const [showModal, setShowModal] = useState(false)
+  const [selectedEvent, setSelectedEvent] = useState<{
+    date: string;
+    time: string;
+    location: string;
+  } | null>(null)
+
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 640)
@@ -112,8 +122,82 @@ export default function Home() {
     setCurrentSection(section)
   }
 
+  const handleEventClick = (eventId: string, date: string) => {
+    setSelectedEvent({
+      date,
+      time: "10:00 AM - 11:00 AM",
+      location: "John Fraser Secondary School Track"
+    })
+    setShowModal(true)
+  }
+
   return (
     <main className="relative min-h-screen overflow-hidden">
+      {/* Modal Overlay */}
+      {showModal && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center px-4">
+          <div 
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            onClick={() => setShowModal(false)}
+          />
+          <div className="relative z-10 w-full max-w-md">
+            <div className="glass p-6 rounded-2xl border border-white/20 shadow-xl">
+              <div className="flex justify-between items-start mb-4">
+                <h3 className="text-xl font-semibold text-white">Club Run Details</h3>
+                <button
+                  onClick={() => setShowModal(false)}
+                  className="text-white/60 hover:text-white transition-colors"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              
+              <div className="space-y-4">
+                <div className="flex items-center space-x-3 text-white/90">
+                  <svg className="w-5 h-5 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  <span>{selectedEvent?.date}</span>
+                </div>
+                
+                <div className="flex items-center space-x-3 text-white/90">
+                  <svg className="w-5 h-5 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span>{selectedEvent?.time}</span>
+                </div>
+
+                <div className="flex items-center space-x-3 text-white/90">
+                  <svg className="w-5 h-5 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                  <span>{selectedEvent?.location}</span>
+                </div>
+
+                <div className="flex items-center space-x-3 text-white/90">
+                  <svg className="w-5 h-5 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                  <span>All paces welcome!</span>
+                </div>
+              </div>
+
+              <div className="mt-6 flex justify-end">
+                <button
+                  onClick={() => setShowModal(false)}
+                  className="px-4 py-2 rounded-lg glass-dark hover:bg-white/20 text-white font-medium transition-all duration-200 border border-white/10"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Sidebar Navigation */}
       <motion.nav 
         className="fixed left-0 top-0 bottom-0 w-14 sm:w-20 hover:w-64 z-50 transition-all duration-200 group"
@@ -290,11 +374,22 @@ export default function Home() {
                         showNonCurrentDates={false}
                         eventContent={(eventInfo) => {
                           return (
-                            <div className="p-1 cursor-pointer hover:bg-white/20 rounded transition-all duration-200">
-                              <div className="text-sm font-medium">
+                            <button 
+                              onClick={(e) => {
+                                e.preventDefault()
+                                handleEventClick(eventInfo.event.startStr, new Date(eventInfo.event.startStr).toLocaleDateString('en-US', { 
+                                  weekday: 'long',
+                                  year: 'numeric',
+                                  month: 'long',
+                                  day: 'numeric'
+                                }))
+                              }}
+                              className="w-full h-full px-2 py-1.5 sm:px-2 sm:py-1.5 hover:bg-white/20 rounded transition-all duration-200 flex items-center justify-center"
+                            >
+                              <span className="text-xs sm:text-sm font-medium">
                                 Club Run
-                              </div>
-                            </div>
+                              </span>
+                            </button>
                           )
                         }}
                         eventDidMount={(info) => {
@@ -466,8 +561,8 @@ export default function Home() {
                       <p>• Positive attitude</p>
                       <p>• Friends are welcome!</p>
                     </div>
-              </div>
-            </motion.div>
+                  </div>
+                </motion.div>
 
                 {/* Contact Form */}
                 <motion.form
